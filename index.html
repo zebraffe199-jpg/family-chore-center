@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Chore Command Center</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <!-- PWA Manifest & iOS Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Chore Center">
+    <link rel="manifest" href="data:application/manifest+json,{
+        'name': 'Family Chore Command Center',
+        'short_name': 'Chores',
+        'start_url': '.',
+        'display': 'standalone',
+        'background_color': '#0f172a',
+        'theme_color': '#0284c7',
+        'icons': []
+    }">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-6">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-700">
+            <div class="flex justify-between items-center mb-3">
+                <h1 class="text-2xl font-bold text-sky-400">Family Chore Command Center</h1>
+                <button onclick="toggleAdmin()" class="bg-sky-600 hover:bg-sky-500 px-4 py-2 rounded-lg font-medium transition">
+                    Admin Mode
+                </button>
+            </div>
+            <p class="text-center text-slate-300 italic text-sm border-t border-slate-700 pt-3">
+                "Please Pickup / Clean Up After Yourself. It Will Make All Of Our Lives & Chores Easier."
+            </p>
+        </header>
+
+        <!-- Main Chores Display Grid -->
+        <main class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Samantha -->
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-md space-y-4">
+                <h2 class="text-xl font-semibold text-pink-400 border-b border-slate-700 pb-2">Samantha</h2>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-sky-400">Daily Chores</span>
+                    <ul id="samanthaDailyList" class="space-y-2 mt-2 bg-slate-900 p-3 rounded-lg border border-slate-700 text-sm"><li>Loading...</li></ul>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Weekly Chores</span>
+                    <ul id="samanthaWeeklyList" class="space-y-2 mt-2 bg-slate-900 p-3 rounded-lg border border-slate-700 text-sm"><li>Loading...</li></ul>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Personal Chores (No Rotation)</span>
+                    <ul id="samanthaPersonalList" class="space-y-2 mt-2 bg-slate-900 p-3 rounded-lg border border-slate-700 text-sm"><li>Loading...</li></ul>
+                </div>
+            </div>
+
+            <!-- David -->
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-md space-y-4">
+                <h2 class="text-xl font-semibold text-emerald-400 border-b border-slate-700 pb-2">David</h2>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-sky-400">Daily Chores</span>
+                    <ul id="davidDailyList" class="space-y-2 mt-2 bg-slate-900 p-3 rounded-lg border border-slate-700 text-sm"><li>Loading...</li></ul>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Weekly Chores</span>
+                    <ul id="davidWeeklyList" class="space-y-2 mt-2 bg-slate-900 p-3 rounded-lg border border-slate-700 text-sm"><li>Loading...</li></ul>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Personal Chores (No Rotation)</span>
+                    <ul id="davidPersonalList" class="space-y-2 mt-2 bg-slate-900 p-3 rounded-lg border border-slate-700 text-sm"><li>Loading...</li></ul>
+                </div>
+            </div>
+
+            <!-- Hunter -->
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-md space-y-4">
+                <h2 class="text-xl font-semibold text-amber-400 border-b border-slate-700 pb-2">Hunter</h2>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-sky-400">Daily Chores</span>
+                    <ul id="hunterDailyList" class="space-y-2 mt-2 bg-slate-900 p-3 rounded-lg border border-slate-700 text-sm"><li>Loading...</li></ul>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Weekly Chores</span>
+                    <ul id="hunterWeeklyList" class="space-y-2 mt-2 bg-slate-900 p-3 rounded-lg border border-slate-700 text-sm"><li>Loading...</li></ul>
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Personal Chores (No Rotation)</span>
+                    <ul id="hunterPersonalList" class="space-y-2 mt-2 bg-slate-900 p-3 rounded-lg border border-slate-700 text-sm"><li>Loading...</li></ul>
+                </div>
+            </div>
+        </main>
+
+        <!-- Admin Panel -->
+        <section id="adminPanel" class="hidden bg-slate-800 p-6 rounded-xl border border-sky-500 shadow-xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h3 class="text-lg font-bold text-sky-300">Admin Chore Manager (Password: admin123)</h3>
+                <div class="flex gap-2">
+                    <button onclick="randomizeChores()" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition">Randomize Chores Now</button>
+                    <button onclick="toggleAdmin()" class="bg-rose-600 hover:bg-rose-500 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition">Exit Admin</button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1">Source Child</label>
+                    <select id="childSelect" onchange="populateExistingChoreSelector()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-slate-100">
+                        <option value="Samantha">Samantha</option>
+                        <option value="David">David</option>
+                        <option value="Hunter">Hunter</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1">Chore Category</label>
+                    <select id="categorySelect" onchange="populateExistingChoreSelector()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-slate-100">
+                        <option value="Daily">Daily Chore</option>
+                        <option value="Weekly">Weekly Chore</option>
+                        <option value="Personal">Personal Chore</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1">Select Chore to Edit/Move</label>
+                    <select id="existingChoreSelect" onchange="loadChoreIntoInput()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-slate-100">
+                        <option value="">-- Add New Instead --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1">Reassign / Move To</label>
+                    <select id="targetChildSelect" class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-slate-100">
+                        <option value="">-- Keep Same Child --</option>
+                        <option value="Samantha">Samantha</option>
+                        <option value="David">David</option>
+                        <option value="Hunter">Hunter</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1">Chore Description</label>
+                    <input type="text" id="choreInput" placeholder="Enter description..." class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-slate-100">
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2">
+                <div class="flex gap-3">
+                    <button onclick="saveOrUpdateChore()" class="bg-emerald-600 hover:bg-emerald-500 px-6 py-2 rounded-lg font-medium transition text-white">
+                        Save / Update / Move
+                    </button>
+                    <button onclick="clearAdminForm()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg font-medium transition text-slate-300">
+                        Clear Form
+                    </button>
+                </div>
+                <span class="text-xs text-slate-400">Resets Checkboxes Daily @ Midnight | Auto-Sends Uncompleted @ 11:59 PM</span>
+            </div>
+        </section>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDX9HUQMrIEcjXonQWZDSfP-Ph02NwnqdM",
+            authDomain: "family-chores-7997f.firebaseapp.com",
+            projectId: "family-chores-7997f",
+            storageBucket: "family-chores-7997f.firebasestorage.app",
+            messagingSenderId: "163826972588",
+            appId: "1:163826972588:web:74566131016c36052d6c09",
+            measurementId: "G-1PC3WW2HLV"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const docRef = db.collection("chores").doc("familyData");
+
+        let currentData = {};
+        const childPINs = { "Samantha": "4080", "David": "3110", "Hunter": "4111" };
+
+        function renderChecklist(elementId, items, completedMap, childName, category) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = "";
+            if (!items || items.length === 0) {
+                el.innerHTML = `<li class="text-slate-500 italic">None assigned</li>`;
+                return;
+            }
+            items.forEach((item, index) => {
+                const isChecked = completedMap && completedMap[index] === true;
+                el.innerHTML += `<li class="flex justify-between items-center py-1 border-b border-slate-800 last:border-0">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleChoreItem('${childName}', '${category}', ${index}, this)" class="w-4 h-4 rounded bg-slate-800 border-slate-700 text-sky-500 focus:ring-sky-500">
+                        <span class="${isChecked ? 'line-through text-slate-500' : 'text-slate-200'}">${item}</span>
+                    </label>
+                    <button onclick="removeChoreItem('${childName}', '${category}', ${index})" class="text-red-400 hover:text-red-300 text-xs ml-2 hidden" data-admin-btn>[X]</button>
+                </li>`;
+            });
+        }
+
+        function checkTimedEvents(data) {
+            const now = new Date();
+            const todayStr = now.toDateString();
+            const day = now.getDay();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+
+            let updatesNeeded = false;
+            let newBatch = {};
+
+            if (data.Last_Reset_Date !== todayStr) {
+                newBatch.Last_Reset_Date = todayStr;
+                newBatch.Samantha_Completed = {};
+                newBatch.David_Completed = {};
+                newBatch.Hunter_Completed = {};
+                updatesNeeded = true;
+            }
+
+            if (hours === 23 && minutes >= 59) {
+                if (data.Last_Auto_Email_Date !== todayStr) {
+                    newBatch.Last_Auto_Email_Date = todayStr;
+                    updatesNeeded = true;
+                    triggerWebhookReport(data);
+                }
+            }
+
+            if (day === 0 && hours === 23 && minutes >= 59) {
+                if (data.Last_Rotation_Date !== todayStr) {
+                    newBatch.Last_Rotation_Date = todayStr;
+                    updatesNeeded = true;
+                }
+            }
+
+            if (updatesNeeded) {
+                newBatch.Last_Updated = now.toISOString();
+                docRef.set(newBatch, { merge: true });
+            }
+        }
+
+        function loadChores() {
+            docRef.onSnapshot((doc) => {
+                if (doc.exists) {
+                    currentData = doc.data();
+                    checkTimedEvents(currentData);
+
+                    renderChecklist('samanthaDailyList', currentData.Samantha_Daily, currentData.Samantha_Completed?.Daily, 'Samantha', 'Daily');
+                    renderChecklist('samanthaWeeklyList', currentData.Samantha_Weekly, currentData.Samantha_Completed?.Weekly, 'Samantha', 'Weekly');
+                    renderChecklist('samanthaPersonalList', currentData.Samantha_Personal, currentData.Samantha_Completed?.Personal, 'Samantha', 'Personal');
+
+                    renderChecklist('davidDailyList', currentData.David_Daily, currentData.David_Completed?.Daily, 'David', 'Daily');
+                    renderChecklist('davidWeeklyList', currentData.David_Weekly, currentData.David_Completed?.Weekly, 'David', 'Weekly');
+                    renderChecklist('davidPersonalList', currentData.David_Personal, currentData.David_Completed?.Personal, 'David', 'Personal');
+
+                    renderChecklist('hunterDailyList', currentData.Hunter_Daily, currentData.Hunter_Completed?.Daily, 'Hunter', 'Daily');
+                    renderChecklist('hunterWeeklyList', currentData.Hunter_Weekly, currentData.Hunter_Completed?.Weekly, 'Hunter', 'Weekly');
+                    renderChecklist('hunterPersonalList', currentData.Hunter_Personal, currentData.Hunter_Completed?.Personal, 'Hunter', 'Personal');
+
+                    populateExistingChoreSelector();
+                }
+            });
+        }
+
+        function toggleAdmin() {
+            const panel = document.getElementById("adminPanel");
+            if (panel.classList.contains("hidden")) {
+                const pin = prompt("Enter Admin Password:");
+                if (pin === "admin123" || pin === "1111" || pin === "2222" || pin === "3333") {
+                    panel.classList.remove("hidden");
+                    document.querySelectorAll('[data-admin-btn]').forEach(el => el.classList.remove('hidden'));
+                    populateExistingChoreSelector();
+                } else if (pin !== null) {
+                    alert("Incorrect Password!");
+                }
+            } else {
+                panel.classList.add("hidden");
+                document.querySelectorAll('[data-admin-btn]').forEach(el => el.classList.add('hidden'));
+            }
+        }
+
+        function populateExistingChoreSelector() {
+            const child = document.getElementById("childSelect").value;
+            const category = document.getElementById("categorySelect").value;
+            const selectEl = document.getElementById("existingChoreSelect");
+            
+            selectEl.innerHTML = `<option value="">-- Add New Instead --</option>`;
+            const list = currentData[`${child}_${category}`] || [];
+            
+            list.forEach((chore, index) => {
+                selectEl.innerHTML += `<option value="${index}">${chore}</option>`;
+            });
+            document.getElementById("targetChildSelect").value = "";
+            document.getElementById("choreInput").value = "";
+        }
+
+        function loadChoreIntoInput() {
+            const child = document.getElementById("childSelect").value;
+            const category = document.getElementById("categorySelect").value;
+            const selectEl = document.getElementById("existingChoreSelect");
+            const index = selectEl.value;
+
+            if (index === "") {
+                document.getElementById("choreInput").value = "";
+                document.getElementById("targetChildSelect").value = "";
+                return;
+            }
+
+            const list = currentData[`${child}_${category}`] || [];
+            document.getElementById("choreInput").value = list[index] || "";
+            document.getElementById("targetChildSelect").value = child;
+        }
+
+        function clearAdminForm() {
+            document.getElementById("existingChoreSelect").value = "";
+            document.getElementById("targetChildSelect").value = "";
+            document.getElementById("choreInput").value = "";
+        }
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        async function randomizeChores() {
+            if (!confirm("Are you sure you want to randomly redistribute all Daily and Weekly chores among the children?")) return;
+
+            const children = ["Samantha", "David", "Hunter"];
+            const categories = ["Daily", "Weekly"];
+
+            let updates = { Last_Updated: new Date().toISOString() };
+
+            categories.forEach(cat => {
+                let pool = [];
+                children.forEach(child => {
+                    const tasks = currentData[`${child}_${cat}`] || [];
+                    pool = pool.concat(tasks);
+                });
+
+                let shuffled = shuffleArray(pool);
+
+                children.forEach((child, idx) => {
+                    let childAssigned = [];
+                    for (let i = idx; i < shuffled.length; i += children.length) {
+                        childAssigned.push(shuffled[i]);
+                    }
+                    updates[`${child}_${cat}`] = childAssigned;
+                });
+            });
+
+            try {
+                await docRef.set(updates, { merge: true });
+                alert("Chores successfully randomized and synced!");
+                triggerWebhookReport(currentData);
+            } catch (error) {
+                alert("Error randomizing chores.");
+            }
+        }
+
+        async function toggleChoreItem(childName, category, index, checkbox) {
+            const enteredPIN = prompt(`Enter PIN for ${childName} to check off this chore:`);
+            if (enteredPIN !== childPINs[childName]) {
+                alert("Incorrect PIN! You cannot check off another child's chore.");
+                checkbox.checked = !checkbox.checked;
+                return;
+            }
+
+            let completedData = currentData[`${childName}_Completed`] || { Daily: {}, Weekly: {}, Personal: {} };
+            if (!completedData[category]) completedData[category] = {};
+
+            completedData[category][index] = checkbox.checked;
+
+            try {
+                await docRef.set({
+                    [`${childName}_Completed`]: completedData,
+                    Last_Updated: new Date().toISOString()
+                }, { merge: true });
+            } catch (e) {
+                alert("Cloud sync error updating status.");
+                checkbox.checked = !checkbox.checked;
+            }
+        }
+
+        async function saveOrUpdateChore() {
+            const sourceChild = document.getElementById("childSelect").value;
+            const category = document.getElementById("categorySelect").value;
+            let editIndex = document.getElementById("existingChoreSelect").value;
+            const targetChild = document.getElementById("targetChildSelect").value || sourceChild;
+            const choreText = document.getElementById("choreInput").value.trim();
+
+            if (!choreText) {
+                alert("Please enter a chore description.");
+                return;
+            }
+
+            // If a chore was selected from the dropdown, ensure editIndex is parsed correctly
+            editIndex = editIndex === "" ? "" : parseInt(editIndex);
+
+            let batchUpdates = { Last_Updated: new Date().toISOString() };
+
+            if (editIndex === "") {
+                const targetKey = `${targetChild}_${category}`;
+                let targetList = currentData[targetKey] || [];
+                if (!Array.isArray(targetList)) targetList = [targetList].filter(Boolean);
+                targetList.push(choreText);
+                batchUpdates[targetKey] = targetList;
+            } else {
+                const sourceKey = `${sourceChild}_${category}`;
+                let sourceList = currentData[sourceKey] || [];
+                
+                if (sourceChild === targetChild) {
+                    sourceList[editIndex] = choreText;
+                    batchUpdates[sourceKey] = sourceList;
+                } else {
+                    sourceList.splice(editIndex, 1);
+                    batchUpdates[sourceKey] = sourceList;
+
+                    const targetKey = `${targetChild}_${category}`;
+                    let targetList = currentData[targetKey] || [];
+                    if (!Array.isArray(targetList)) targetList = [targetList].filter(Boolean);
+                    targetList.push(choreText);
+                    batchUpdates[targetKey] = targetList;
+                }
+            }
+
+            try {
+                await docRef.set(batchUpdates, { merge: true });
+                alert("Chore successfully saved and synced!");
+                clearAdminForm();
+                populateExistingChoreSelector();
+            } catch (error) {
+                alert("Cloud sync error.");
+            }
+        }
+
+        async function removeChoreItem(child, category, index) {
+            const fieldKey = `${child}_${category}`;
+            let currentList = currentData[fieldKey] || [];
+            if (Array.isArray(currentList)) {
+                currentList.splice(index, 1);
+                try {
+                    await docRef.set({
+                        [fieldKey]: currentList,
+                        Last_Updated: new Date().toISOString()
+                    }, { merge: true });
+                } catch (e) {
+                    alert("Error removing item.");
+                }
+            }
+        }
+
+        async function triggerWebhookReport(data) {
+            try {
+                await fetch('https://hook.us2.make.com/6j855aedc3py6b72g20ll382w3k46gla', {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            } catch (e) {
+                console.error("Webhook trigger failed", e);
+            }
+        }
+
+        loadChores();
+    </script>
+</body>
+</html>
